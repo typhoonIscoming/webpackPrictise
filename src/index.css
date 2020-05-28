@@ -6,3 +6,11 @@ html, body{
     font-size: 20px;
     color: red;
 }
+.enc-p-tag{
+    font-size: 12px;
+    color: blue;
+    line-height: 30px;
+}
+.enc-p-tag-second{
+    color: yellowgreen;
+}
