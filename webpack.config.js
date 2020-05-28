@@ -11,7 +11,7 @@ module.exports = {
     mode: 'none', // production | development
     entry: './src/index.js',
     output: {
-        filename: '[name].js',
+        filename: '[name].[hash:4].js',
         path: config.build.assetsRoot,
         publicPath: process.env.NODE_ENV === 'production'
             ? config.build.assetsPublicPath
@@ -27,10 +27,8 @@ module.exports = {
                 removeComments: false,
                 collapseWhitespace: false,
                 removeAttributeQuotes: false
-                // more options:
-                // https://github.com/kangax/html-minifier#options-quick-reference
+                // more options: https://github.com/kangax/html-minifier#options-quick-reference
             },
-            // necessary to consistently work with multiple chunks via CommonsChunkPlugin
         }),
         new CopyWebpackPlugin({
             patterns: [
