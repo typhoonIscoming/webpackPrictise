@@ -1,4 +1,4 @@
-![webpack](https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1590646760726&di=fecc7a2c61e207405fe67d006b43608b&imgtype=0&src=http%3A%2F%2Fpic2.zhimg.com%2Fv2-ea57e2d2c487d0af20c93c4be5f25b5f_1200x500.jpg, 'webpack')
+![webpack](https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1590646760726&di=fecc7a2c61e207405fe67d006b43608b&imgtype=0&src=http%3A%2F%2Fpic2.zhimg.com%2Fv2-ea57e2d2c487d0af20c93c4be5f25b5f_1200x500.jpg 'webpack')
 
 ## 本文基于webpack4.43.0 & webpack-cli3.3.11
 
@@ -43,3 +43,14 @@ module.exports = {
 ---
 `npx webpack --mode 'development'`
 
+# 探索webpack运行机制与核心工作原理
+   
+- webpack-cli启动打包流程
+- 载入webpack核心工作模块，创建compiler
+- 使用compiler对象编译整个项目
+- 从入口文件开始，解析模块依赖，形成依赖关系树
+- 递归依赖树，将每个模块交给对应的loader处理
+- 合并loader处理完的结果，将打包结果输出到dist目录
+
+- webpack-cli的作用就是将cli参数和webpack配置文件中的参数整合得到一个完整的配置对象
+- webpack-cli会通过yargs模块解析cli参数(运行webpack命令时，通过命令传入的参数)
