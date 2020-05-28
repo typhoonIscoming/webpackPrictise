@@ -1,0 +1,1 @@
+# 测试copy-webpack-plugin的用法
