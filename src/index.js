@@ -1,7 +1,8 @@
 import add from './lib'
-import './index.css'
-import './test.md'
+require('./index.css')
+import '../static/test.md'
 
 const result = add(3, 4)
 
 console.log(result)
+console.log(add(312, 47289))

@@ -7,6 +7,12 @@ function resolve(dir) {
 module.exports = {
     dev: {
         assetsPublicPath: './',
+        errorOverlay: true,
+        autoOpenBrowser: true,
+        host: 'localhost',
+        port: '8088',
+        proxyTable: {},
+        poll: false,
     },
     build: {
         assetsRoot: resolve('dist'),
