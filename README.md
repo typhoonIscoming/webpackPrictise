@@ -17,8 +17,10 @@
 ## 快速上手
 
 - 初始化一个node项目，使用package.json管理模块
+---
 `npm init`
 - 下载webpack(核心模块)、webpack-cli(webpack的cli程序，用来在命令行调用webpack)
+---
 `npm i webpack webpack-cli --save-dev`
 
 - 执行命令 npx webpack
@@ -38,5 +40,6 @@ module.exports = {
 }
 ```
 - 在配置webpack的工作模式时，可以通过配置文件设置mode,也可以通过命令行配置
+---
 `npx webpack --mode 'development'`
 
