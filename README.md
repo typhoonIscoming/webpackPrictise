@@ -54,3 +54,31 @@ module.exports = {
 
 - webpack-cli的作用就是将cli参数和webpack配置文件中的参数整合得到一个完整的配置对象
 - webpack-cli会通过yargs模块解析cli参数(运行webpack命令时，通过命令传入的参数)
+
+
+## 添加sass-loader,必须安装node-sass，因为sass-loader依赖于node-sass
+---
+`npm i node-sass sass-loader --save-dev`
+   
+- 通常，生产环境下比较推荐的做法是，使用 mini-css-extract-plugin 将样式表抽离成专门的单独文件。这样，样式表将不再依赖于 JavaScript
+```
+    module: {
+        rules: [{
+            test: /\.scss$/,
+            use: [
+                // fallback to style-loader in development
+                process.env.NODE_ENV !== 'production' ? 'style-loader' : MiniCssExtractPlugin.loader,
+                "css-loader",
+                "sass-loader"
+            ]
+        }]
+    },
+    plugins: [
+        new MiniCssExtractPlugin({
+            // Options similar to the same options in webpackOptions.output
+            // both options are optional
+            filename: "[name].css",
+            chunkFilename: "[id].css"
+        })
+    ],
+```

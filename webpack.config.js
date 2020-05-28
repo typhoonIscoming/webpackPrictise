@@ -3,6 +3,7 @@ const path = require('path')
 const webpack = require('webpack')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
+const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 
 const config = require('./config')
 
@@ -38,6 +39,10 @@ module.exports = {
                 },
             ],
         }),
+        new MiniCssExtractPlugin({
+            filename: "[name].css",
+            chunkFilename: "[id].css"
+        })
     ],
     module: {
         rules: [
@@ -45,10 +50,24 @@ module.exports = {
                 test: /\.css$/,
                 use: [
                     {
-                        loader: "style-loader",
+                        loader: process.env.NODE_ENV === 'production' ? 'style-loader' : MiniCssExtractPlugin.loader,
                     },
                     {
                         loader: 'css-loader',
+                    },
+                ],
+            },
+            {
+                test: /\.scss$/,
+                use: [
+                    {
+                        loader: process.env.NODE_ENV === 'production' ? 'style-loader' : MiniCssExtractPlugin.loader,
+                    },
+                    {
+                        loader: 'css-loader',
+                    },
+                    {
+                        loader: 'sass-loader',
                     },
                 ],
             },
