@@ -93,6 +93,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _lib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(1);
 /* harmony import */ var _index_css__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(2);
 /* harmony import */ var _index_css__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_index_css__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _test_md__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(6);
+/* harmony import */ var _test_md__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_test_md__WEBPACK_IMPORTED_MODULE_2__);
+
 
 
 
@@ -523,6 +526,12 @@ function toComment(sourceMap) {
   var data = "sourceMappingURL=data:application/json;charset=utf-8;base64,".concat(base64);
   return "/*# ".concat(data, " */");
 }
+
+/***/ }),
+/* 6 */
+/***/ (function(module, exports) {
+
+module.exports = "<h1 id=\"这是一个测试用的markdown文件，使用自己编译的loader解析\">这是一个测试用的markdown文件，使用自己编译的loader解析</h1>\n"
 
 /***/ })
 /******/ ]);

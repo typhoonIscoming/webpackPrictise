@@ -62,6 +62,11 @@ module.exports = {
                     },
                 ],
             },
+            {
+                test: /\.md$/,
+                // 直接使用相对路径
+                use: './loader/markdown-loader.js'
+            },
         ],
     },
 }
