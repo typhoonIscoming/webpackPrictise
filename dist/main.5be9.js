@@ -419,7 +419,7 @@ module.exports = function (list, options) {
 var ___CSS_LOADER_API_IMPORT___ = __webpack_require__(5);
 exports = ___CSS_LOADER_API_IMPORT___(false);
 // Module
-exports.push([module.i, "html, body{\n    margin: 0;\n}", ""]);
+exports.push([module.i, "html, body{\n    margin: 0;\n    color: black;\n}\n#root{\n    font-size: 20px;\n    color: red;\n}", ""]);
 // Exports
 module.exports = exports;
 

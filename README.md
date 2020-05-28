@@ -1,4 +1,4 @@
-![webpack]('./static/images/webpack.jpg')
+![webpack]('/static/images/webpack.jpg')
 
 ## 本文基于webpack4.43.0 & webpack-cli3.3.11
 

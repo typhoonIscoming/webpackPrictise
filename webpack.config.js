@@ -32,14 +32,13 @@ module.exports = {
             template: 'index.html',
             inject: true,
             minify: {
-                removeComments: true,
+                removeComments: false,
                 collapseWhitespace: false,
-                removeAttributeQuotes: true
+                removeAttributeQuotes: false
                 // more options:
                 // https://github.com/kangax/html-minifier#options-quick-reference
             },
             // necessary to consistently work with multiple chunks via CommonsChunkPlugin
-            // chunksSortMode: 'dependency'
         }),
         new CopyWebpackPlugin({
             patterns: [
@@ -54,7 +53,14 @@ module.exports = {
         rules: [
             {
                 test: /\.css$/,
-                loaders: ['style-loader', 'css-loader'],
+                use: [
+                    {
+                        loader: "style-loader",
+                    },
+                    {
+                        loader: 'css-loader',
+                    },
+                ],
             },
         ],
     },
