@@ -85,3 +85,5 @@ module.exports = {
 [编写一个自己的插件](./static/MySelfPlugin.md)
 
 [tree shaking](./static/TreeShaking.md)
+
+[如何利用Dev Server提高本地开发效率](./static/DevServeConfig.md)
