@@ -82,4 +82,4 @@ module.exports = {
         })
     ],
 ```
-[编写一个自己的插件](./static/MyselfPlugin.md)
+[编写一个自己的插件](./static/MySelfPlugin.md)
