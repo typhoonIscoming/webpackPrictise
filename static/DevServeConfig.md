@@ -20,14 +20,11 @@
 
 - npm i webpack-dev-server --save-dev
 - 运行：npx webpack-dev-server
-```flow
+flow
 st=>start: 开始
-op=>operation: 启动服务器
-cond=>condition: 成功或失败？
-op=>operation: webpack构建
-op=>operation: 监视文件变化
+op1=>operation: 启动服务器
+op2=>operation: webpack构建
+op3=>operation: 监视文件变化
 e=>end
-st->op->cond
-cond(yes)->e
-cond(no)->op
-&```
+st->op1->op2->op3
+op3->op2
