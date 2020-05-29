@@ -5,6 +5,8 @@ const HtmlWebpackPlugin = require('html-webpack-plugin')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 
+const RemoveCommentsPlugin = require('./plugin/removeCommentsPlugin')
+
 const config = require('./config')
 
 
@@ -42,7 +44,8 @@ module.exports = {
         new MiniCssExtractPlugin({
             filename: "[name].css",
             chunkFilename: "[id].css"
-        })
+        }),
+        new RemoveCommentsPlugin({ defined: 'xie' })
     ],
     module: {
         rules: [
