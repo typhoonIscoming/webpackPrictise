@@ -12,13 +12,14 @@ const config = require('./config')
 
 module.exports = {
     mode: 'none', // production | development
-    entry: './src/index.js',
+    entry: ['./src/index.js'],
     output: {
         filename: '[name].[hash:4].js',
         path: config.build.assetsRoot,
         publicPath: process.env.NODE_ENV === 'production'
             ? config.build.assetsPublicPath
             : config.dev.assetsPublicPath,
+        library: "[name].[hash]"
 
     },
     plugins: [
@@ -45,7 +46,7 @@ module.exports = {
             filename: "[name].css",
             chunkFilename: "[id].css"
         }),
-        new RemoveCommentsPlugin({ defined: 'xie' })
+        // new RemoveCommentsPlugin({ defined: 'xie' })
     ],
     module: {
         rules: [
