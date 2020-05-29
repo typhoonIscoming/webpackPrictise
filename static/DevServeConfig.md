@@ -27,6 +27,5 @@ op2=>operation: webpack构建
 op3=>operation: 监视文件变化
 e=>end
 
-st->op1->op2->op3
-op3->op2
+st->op1->op2->op3(right)->op2
 ```
