@@ -18,13 +18,14 @@ const spinner = ora('building for production...')
 spinner.start()
 
 webpack(merge(webpackConfig, {
+    mode: "production",
     plugins: [
         new CleanWebpackPlugin(),
-        new webpack.DllPlugin({
-            context: __dirname,
-            path: path.join(__dirname, '..', '/dist/[name]-manifest.json'),
-            name: '[name]',
-        }),
+        // new webpack.DllPlugin({
+        //     context: __dirname,
+        //     path: path.join(__dirname, '..', '/dist/[name]-manifest.json'),
+        //     name: '[name]',
+        // }),
         // new webpack.DllReferencePlugin({
         //     // 描述 react 动态链接库的文件内容
         //     manifest: require('../dist/main-manifest.json'),
@@ -43,18 +44,38 @@ webpack(merge(webpackConfig, {
         //     }
         // })
     ],
-    optimization: {
-        minimizer: [
-            new TerserPlugin({
-                cache: true,
-                parallel: true,
-                sourceMap: true, // Must be set to true if using source-maps in production
-                terserOptions: {
-                    // https://github.com/webpack-contrib/terser-webpack-plugin#terseroptions
-                }
-            }),
-        ],
-    },
+    // optimization: {
+    //     minimizer: [
+    //         new TerserPlugin({
+    //             cache: true,
+    //             parallel: true,
+    //             sourceMap: true, // Must be set to true if using source-maps in production
+    //             terserOptions: {
+    //                 // https://github.com/webpack-contrib/terser-webpack-plugin#terseroptions
+    //             }
+    //         }),
+    //     ],
+    //     splitChunks: {
+    //         chunks: 'all',
+    //         minSize: 30000,
+    //         maxSize: 0,
+    //         minChunks: 1,
+    //         maxAsyncRequests: 6,
+    //         maxInitialRequests: 4,
+    //         automaticNameDelimiter: '~',
+    //         cacheGroups: {
+    //             defaultVendors: {
+    //                 test: /[\\/]node_modules[\\/]/,
+    //                 priority: -10
+    //             },
+    //             default: {
+    //                 minChunks: 2,
+    //                 priority: -20,
+    //                 reuseExistingChunk: true
+    //             }
+    //         }
+    //     }
+    // },
 }), (err, stats) => {
     spinner.stop()
     if (err) throw err

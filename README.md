@@ -83,3 +83,5 @@ module.exports = {
     ],
 ```
 [编写一个自己的插件](./static/MySelfPlugin.md)
+
+[tree shaking](./static/TreeShaking.md)

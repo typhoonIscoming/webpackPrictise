@@ -12,14 +12,14 @@ const config = require('./config')
 
 module.exports = {
     mode: 'none', // production | development
-    entry: ['./src/index.js'],
+    entry: './src/index.js',
     output: {
         filename: '[name].[hash:4].js',
         path: config.build.assetsRoot,
         publicPath: process.env.NODE_ENV === 'production'
             ? config.build.assetsPublicPath
             : config.dev.assetsPublicPath,
-        library: "[name].[hash]"
+        library: '[name]'
 
     },
     plugins: [
@@ -81,5 +81,11 @@ module.exports = {
                 use: './loader/markdown-loader.js'
             },
         ],
+    },
+    optimization: {
+        splitChunks: {
+            // include all types of chunks
+            chunks: 'all'
+        }
     },
 }
