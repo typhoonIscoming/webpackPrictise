@@ -49,3 +49,38 @@ devServer: {
     },
 },
 ```
+
+## 如何配置source map
+
+- 映射转换过后的代码和源代码的关系
+- map文件中保存的是json，主要的属性有:
+```
+// jquery-3.4.1.map
+{
+    "version": 3, // 当前map文件的版本
+    "source": ["jquery-3.4.1.js"], // 记录的是打包的源代码；因为可能会多个文件打包，所以是一个数组
+    "names": [ 
+        "global",
+        "factory",
+        "module",
+        "exports",
+        "document",
+        ...
+    ], // 源代码中的成员名称。在压缩时，压缩工具会把代码中有意义的变量名称压缩成简短的字符，以此来增加压缩比例，这里记录的就是源代码中的名称
+    "mapings": "", // 这也是最重要的属性，里面记录的是通过base64编码过后的字符和转换前字符的关系
+}
+```
+
+- sourcemap 配置
+```
+// webpack.config.js
+{
+    module.exports = {
+        devtool: "source-map",
+    }
+}
+// 如果不设置devtool: "source-map",那么在页面上的报错会被定位到打包后的文件的报错的位置
+// 设置之后，会被定位到具体的报错的文件的位置
+```
+- 不同的生成source-map的方式，速度是不一样的
+![devtool取值不同](./static/images/sourcemap.png "devtool取值不同，速度也是不一样的")
