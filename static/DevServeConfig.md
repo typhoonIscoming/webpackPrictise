@@ -299,7 +299,7 @@ module.hot.accept('./editor', () => {
 -   在配置文件中，这里我们将 devServer 中的 hot 等于 true 修改为 hotOnly 等于 true 即可。此时我们再去修改代码，无论是否处理了这个代码模块的热替换逻辑，浏览器都不会自动刷新了
 
 -   第二个问题，对于使用了 HMR API 的代码，如果我们在没有开启 HMR 功能的情况下运行 Webpack 打包，此时运行环境中就会报出 Cannot read property 'accept' of undefined 的错误，具体错误信息如下：
--   ![HMR 报错信息](./static/images/hotReplaceError.png)
+-   ![HMR 报错信息](./images/hotReplaceError.png)
 
 -   原因是 module.hot 是 HMR 插件提供的成员，没有开启这个插件，自然也就没有这个对象。
 -   解决办法也很简单，与我们在业务代码中判断 API 兼容一样，我们先判断是否存在这个对象，然后再去使用就可以了，具体代码如下：
@@ -315,7 +315,7 @@ if (module.hot) { // 确保有 HMR API 对象
 
 -   另一个问题：我们在代码中写了很多与业务功能本身无关的代码，会不会对生产环境有影响？
 -   我们回到配置文件中，确保已经将热替换特性关闭，并且移除掉了 HotModuleReplacementPlugin 插件，（此时 module.hot=false）然后打开命令行终端，正常运行一下 Webpack 打包，打包过后，我们找到打包生成的 bundle.js 文件，然后找到里面 main.js 对应的模块，具体结果如下图：
--   ![关闭 HMR 之后，手写的 JS 热替换代码](./static/images/bundle.png)
+-   ![关闭 HMR 之后，手写的 JS 热替换代码](./images/bundle.png)
 -   我们能看到被打包之后的代码 if(false) {}，是一个 if 条件是 false 的空语句，对于没有意义的空语句，在压缩代码时，不会被打包到最后的压缩代码中，所以手动写的 JS 代码热替换的逻辑根本不会对生产环境有任何影响。
 
 -   [Vue HMR 热更新方案](https://vue-loader.vuejs.org/guide/hot-reload.html)
