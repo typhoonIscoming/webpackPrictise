@@ -84,3 +84,33 @@ devServer: {
 ```
 - 不同的生成source-map的方式，速度是不一样的
 ![devtool取值不同,速度也是不一样的](./images/sourcemap.png)
+- [官方devtool配置对比](https://webpack.docschina.org/configuration/devtool/#src/components/Sidebar/Sidebar.jsx)
+
+### eval模式
+- 指的是JS中的一个函数，可以用来运行字符串中的JS代码
+`eval("// extracted by mini-css-extract-plugin\n\n//# sourceURL=webpack://%5Bname%5D/./src/index.scss?");`
+- 每一个模块都被打包到了eval函数中，并且都通过//# sourceURL=webpack:/// ./src/**?声明是属于哪一个模块的
+- 但是在打包过后的文件中，通过报错信息点击文件，看到的文件内容是打包过后的
+- 综上：eval模式会将所有的模块打包到eval函数中执行，通过//# sourceURL声明文件路径，不会生成map文件，它只能知道是哪一个文件报错，不能知道报错信息在哪一行发生
+
+### eval-source-map模式
+- 不能用于生产环境
+
+### cheap-eval-source-map模式
+- 不能用于生产环境，只能定位到行，定位的代码是经过loader处理了的，将ES6转换过后的结果
+
+### cheap-source-map模式
+- 只能定位到行不能定位到列
+
+### cheap-module-source-map模式
+- 这种模式定位的源代码和我们编写的源代码一模一样。没有转换ES6的代码
+- 这也就是要给js配置loader的原因，因为这种名字中带有module的模式，解析出来是没有经过loader加工的，名字中没有module的模式，解析出来的是经过loader加工的，也就是说我们想要还原一模一样的代码，就需要使用cheap-module-eval-source-map模式
+
+### inline-source-map模式
+- 跟普通source-map模式效果相同，只不过这种模式下source-map不是以物理文件形式存在，而是以data URLs的方式出现在代码中。eval-source-map也是这种inline方式
+
+## 写在最后
+- 我个人使用cheap-module-eval-source-map模式
+- 我平时使用框架会比较多，React和Vue，无论是jsx还是vue单文件组件，loader转换后的差别都比较大，我需要调试转换前的代码
+- 一般情况下，我在项目中设置的eslint规范，在html中不会超过200个字符，在js逻辑中也不会超过100个字符。如果报错，定位到行也能够满足需求，能排查出来错误的原因了，还可以提升构建速度。
+- 虽然在启动打包时比较慢，但大多数时候是使用webpack-dev-server在监视模式下(--open)构建打包，它重新打包的速度很快，所以也能满足需求。

@@ -20,7 +20,6 @@ const webpackConfig = merge(devConfig, {
     plugins: [
         new webpack.HotModuleReplacementPlugin(),
     ],
-    // devtool: 'source-map'
 })
 
 webpackDevServer.addDevServerEntrypoints(webpackConfig, options);

@@ -18,7 +18,7 @@ const spinner = ora('building for production...')
 spinner.start()
 
 webpack(merge(webpackConfig, {
-    mode: "production",
+    mode: "development",
     plugins: [
         new CleanWebpackPlugin(),
         // new webpack.DllPlugin({

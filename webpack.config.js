@@ -12,6 +12,7 @@ const config = require('./config')
 
 module.exports = {
     mode: 'none', // production | development
+    devtool: 'cheap-module-eval-source-map',
     entry: './src/index.js',
     output: {
         filename: '[name].[hash:4].js',
