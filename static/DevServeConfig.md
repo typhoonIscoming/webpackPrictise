@@ -83,4 +83,4 @@ devServer: {
 // 设置之后，会被定位到具体的报错的文件的位置
 ```
 - 不同的生成source-map的方式，速度是不一样的
-![devtool取值不同](./static/images/sourcemap.png "devtool取值不同，速度也是不一样的")
+![devtool取值不同,速度也是不一样的](./images/sourcemap.png)
