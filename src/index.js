@@ -10,5 +10,3 @@ console.log(result)
 const maxNum = reduce(98, 67)
 
 console.log('maxNum', maxNum)
-
-document.write('xixix')
