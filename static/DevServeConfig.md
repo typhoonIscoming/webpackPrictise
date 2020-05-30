@@ -114,3 +114,190 @@ devServer: {
 - 我平时使用框架会比较多，React和Vue，无论是jsx还是vue单文件组件，loader转换后的差别都比较大，我需要调试转换前的代码
 - 一般情况下，我在项目中设置的eslint规范，在html中不会超过200个字符，在js逻辑中也不会超过100个字符。如果报错，定位到行也能够满足需求，能排查出来错误的原因了，还可以提升构建速度。
 - 虽然在启动打包时比较慢，但大多数时候是使用webpack-dev-server在监视模式下(--open)构建打包，它重新打包的速度很快，所以也能满足需求。
+
+---
+---
+
+## 自动刷新的问题
+- 例如，这里是一个编辑器应用，我想要即时调试这个编辑器中内容文本的样式。那正常的操作肯定是我先尝试在编辑器里面去添加一些文本，作为展示样例，再回到开发工具中，找到控制编辑器样式的 CSS 文件，然后进行编辑。
+- 那这时候我们就能够发现问题了：当我们修改完编辑器文本对应的样式过后，原本想着可以即时看到最新的界面效果，但是这时编辑器中的内容却没有了。这时就不得不再次回到应用中再来添加一些测试文本，查看样式效果。那如果修改后还是对样式不满意的话，你还需要继续调整样式，调整之后又会面临文本内容丢失的问题。那久而久之你就会发现，自动刷新这个功能还是有点鸡肋，并没有想象的那么好用。
+- 出现这个问题的原因，是因为我们每次修改完代码，Webpack 都可以监视到变化，然后自动打包，再通知浏览器自动刷新，一旦页面整体刷新，那页面中的任何操作状态都将会丢失，所以才会出现我们上面所看到的情况。
+
+
+## 模块支持热替换(HMR)
+- 全称hot module replacement,翻译模块热更新，指在运行过程中的即时变化
+- hmr已经集成到了webpack-dev-server，所以不需要单独安装插件
+- 在运行webpack-dev-server时，只需要传入--hot参数去开启这个特性
+- 也可以通过配置文件，在devServer中hot设置为ture,同时导入webpack, 使用HotModuleReplacementPlugin插件
+
+## 开启热更新
+```
+{
+    devServer: {
+        // 开启 HMR 特性，如果资源不支持 HMR 会 fallback 到 live reloading
+        hot: true
+        // 只使用 HMR，不会 fallback 到 live reloading
+        // hotOnly: true
+    },
+    plugins: [
+        new webpack.HotModuleReplacementPlugin(),
+    ],
+}
+```
+
+## HMR疑问？
+- Q： 为什么开启HMR后，样式文件的修改支持热更新
+- A： 因为样式文件是经过了loader的处理，而在style-loader中就已经自动处理了样式文件的热更新，所以就不需要额外手动处理
+
+- Q： 为什么样式就可以自动处理，而我们的脚本就需要自己手动处理呢？
+- A： 因为样式模块更新过后，只需要把更新后的 CSS 及时替换到页面中，它就可以覆盖掉之前的样式，从而实现更新。而我们所编写的 JavaScript 模块是没有任何规律的，你可能导出的是一个对象，也可能导出的是一个字符串，还可能导出的是一个函数，使用时也各不相同。所以 Webpack 面对这些毫无规律的 JS 模块，根本不知道该怎么处理更新后的模块，也就无法直接实现一个可以通用所有情况的模块替换方案。那这就是为什么样式文件可以直接热更新，而 JS 文件更新后页面还是回退到自动刷新的原因。
+
+- Q： 平时使用 vue-cli 或者 create-react-app 这种框架脚手架工具的人会说，“我的项目就没有手动处理，JavaScript 代码照样可以热替换？
+- A： 这是因为你使用的是框架，使用框架开发时，我们项目中的每个文件就有了规律，例如 React 中要求每个模块导出的必须是一个函数或者类，那这样就可以有通用的替换办法，所以这些工具内部都已经帮你实现了通用的替换操作，自然就不需要手动处理了。
+
+- **综上所述，我们还是需要自己手动通过代码来处理，当 JavaScript 模块更新过后，该如何将更新后的模块替换到页面中。**
+
+## HMR APIs
+- HotModuleReplacementPlugin 为我们的 JavaScript 提供了一套用于处理 HMR 的 API，我们需要在我们自己的代码中，使用这套 API 将更新后的模块替换到正在运行的页面中。
+```
+// ./src/main.js
+import createEditor from './editor'
+import logo from './icon.png'
+
+const img = new Image()
+img.src = logo
+document.body.appendChild(img)
+
+const editor = createEditor()
+document.body.appendChild(editor)
+
+```
+- 这是 Webpack 打包的入口文件，正常情况下，在这个文件中会加载一些其他模块。正是因为在 main.js 中使用了这些模块，所以一旦这些模块更新了过后，我们在 main.js 中就必须重新使用更新后的模块。我们需要在这个文件中添加一些额外的代码，去处理它所依赖的这些模块更新后的热替换逻辑。
+- **对于开启 HMR 特性的环境中，我们可以访问到全局的 module 对象中的 hot 成员。这个成员是一个对象，这个对象就是 HMR API 的核心对象，它提供了一个 accept 方法，用于注册当某个模块更新后的处理函数。accept 方法第一个参数接收的就是所监视的依赖模块路径，第二个参数就是依赖模块更新后的处理函数。**
+- 那我们这里先尝试注册 ./editor 模块更新过后的处理函数，第一个参数就是 editor 模块的路径，第二个参数则需要我们传入一个函数，然后在这个函数中打印一个消息，具体代码如下：
+```
+// ./main.js
+// ... 原本的业务代码
+module.hot.accept('./editor', () => {
+  // 当 ./editor.js 更新，自动执行此函数
+  console.log('editor 更新了～～', createEditor)
+})
+```
+- 如果我们修改了 editor 模块，保存过后，浏览器的控制台中就会自动打印我们上面在代码中添加的消息，而且浏览器也不会自动刷新了。那也就是说一旦这个模块的更新被我们手动处理了，就不会触发自动刷新；反之，如果没有手动处理，热替换会自动 fallback（回退）到自动刷新。
+
+## JS 模块热替换
+- 在以上的代码中会打印"editor 更新了～～" 和createEditor函数。修改 editor 模块，保存过后，你就会发现当模块更新后，我们这里拿到的 createEditor 函数也就更新为了最新的结果
+- 既然模块文件更新后 createEditor 函数可以自动更新，那剩下的就好办了。我们这里使用 createEditor 函数是用来创建一个界面元素的，那模块一旦更新了，这个元素也就需要重新创建，所以我们这里先移除原来的元素，然后再调用更新后的 createEditor 函数，创建一个新的元素追加到页面中，具体代码如下：
+```
+// ./main.js
+import createEditor from './editor'
+
+const editor = createEditor()
+document.body.appendChild(editor)
+
+// ... 原本的业务代码
+
+// HMR -----------------------------------
+let lastEditor = editor
+module.hot.accept('./editor', () => {
+  document.body.removeChild(lastEditor) // 移除之前创建的元素
+  const newEditor = createEditor() // 用新模块创建新元素
+  document.body.appendChild(newEditor)
+})
+```
+- 完成以后，我们再来尝试修改 editor 模块，此时就应该是正常的热替换效果了。
+
+## 热替换的状态保持
+- 如果我们尝试在界面上输入一些内容（形成页面操作状态），然后回到代码中再次修改 editor 模块。那此时你仍然会发现问题，由于热替换时，把界面上之前的编辑器元素移除了，替换成了一个新的元素，所以页面上之前的状态同样会丢失。这也就证明我们的热替换操作还需要改进，我们必须在替换时把状态保留下来。
+
+- 想保留这个状态也很简单，就是在替换前先拿到编辑器中的内容，然后替换后在放回去就行了。那因为我这里使用的是可编辑元素，而不是文本框，所以我们需要通过 innerHTML 拿到之前编辑的内容，然后设置到更新后创建的新元素中，具体代码如下：
+```
+// ./main.js
+import createEditor from './editor'
+const editor = createEditor()
+document.body.appendChild(editor)
+// ... 原本的业务代码
+// HMR --------------------------------
+let lastEditor = editor
+module.hot.accept('./editor', () => {
+  // 当 editor.js 更新，自动执行此函数
+  // 临时记录更新前编辑器内容
+  const value = lastEditor.innerHTML
+  // 移除更新前的元素
+  document.body.removeChild(lastEditor)
+  // 创建新的编辑器
+  // 此时 createEditor 已经是更新过后的函数了
+  lastEditor = createEditor()
+  // 还原编辑器内容
+  lastEditor.innerHTML = value
+  // 追加到页面
+  document.body.appendChild(lastEditor)
+})
+```
+- 至此，对于 editor 模块的热替换逻辑就算是全部实现了。通过这个过程应该能够发现，为什么 Webpack 需要我们自己处理 JS 模块的热更新了：因为不同的模块有不同的情况，不同的情况，在这里处理时肯定也是不同的。就好像，我们这里是一个文本编辑器应用，所以需要保留状态，如果不是这种类型那就不需要这样做。所以说 Webpack 没法提供一个通用的 JS 模块替换方案。
+
+## 图片模块热替换
+- 相比于 JavaScript 模块热替换，图片的热替换逻辑就简单多了
+- 我们同样通过 module.hot.accept 注册这个图片模块的热替换处理函数，在这个函数中，我们只需要重新给图片元素的 src 设置更新后的图片路径就可以了。因为图片修改过后图片的文件名会发生变化，而这里我们就可以直接得到更新后的路径，所以重新设置图片的 src 就能实现图片热替换，具体代码如下：
+```
+// ./src/main.js
+import logo from './icon.png'
+// ... 其他代码
+module.hot.accept('./icon.png', () => {
+  // 当 icon.png 更新后执行
+  // 重写设置 src 会触发图片元素重新加载，从而局部更新图片
+  img.src = logo
+})
+```
+
+## 常见问题
+
+- 如果处理热替换的代码（处理函数）中有错误，结果也会导致自动刷新。例如我们这里在处理函数中故意加入一个运行时错误，代码如下:
+```
+// ./src/main.js
+module.hot.accept('./editor', () => {
+  // 刻意造成运行异常
+  undefined.foo()
+})
+```
+- 直接测试你会发现 HMR 不会正常工作，而且根本看不到异常
+- 这是因为 HMR 过程报错导致 HMR 失败，HMR 失败过后，会自动回退到自动刷新，页面一旦自动刷新，控制台中的错误信息就会被清除，这样的话，如果不是很明显的错误，就很难被发现。
+- 在这种情况下，我们可以使用 hotOnly 的方式来解决，因为现在使用的 hot 方式，如果热替换失败就会自动回退使用自动刷新，而 hotOnly 的情况下并不会使用自动刷新。
+- 在配置文件中，这里我们将 devServer 中的 hot 等于 true 修改为 hotOnly 等于 true即可。此时我们再去修改代码，无论是否处理了这个代码模块的热替换逻辑，浏览器都不会自动刷新了
+
+- 第二个问题，对于使用了 HMR API 的代码，如果我们在没有开启 HMR 功能的情况下运行 Webpack 打包，此时运行环境中就会报出 Cannot read property 'accept' of undefined 的错误，具体错误信息如下：
+[HMR报错信息](./static/images/hotReplaceError.png)
+
+- 原因是 module.hot 是 HMR 插件提供的成员，没有开启这个插件，自然也就没有这个对象。
+- 解决办法也很简单，与我们在业务代码中判断 API 兼容一样，我们先判断是否存在这个对象，然后再去使用就可以了，具体代码如下：
+```
+// HMR -----------------------------------
+if (module.hot) { // 确保有 HMR API 对象
+  module.hot.accept('./editor', () => {
+    // ...
+  })
+}
+```
+
+- 另一个问题：我们在代码中写了很多与业务功能本身无关的代码，会不会对生产环境有影响？
+- 我们回到配置文件中，确保已经将热替换特性关闭，并且移除掉了 HotModuleReplacementPlugin 插件，（此时module.hot=false）然后打开命令行终端，正常运行一下 Webpack 打包，打包过后，我们找到打包生成的 bundle.js 文件，然后找到里面 main.js 对应的模块，具体结果如下图：
+[关闭HMR之后，手写的JS热替换代码](./static/images/bundle.png)
+- 我们能看到被打包之后的代码if(false) {}，是一个if条件是false的空语句，对于没有意义的空语句，在压缩代码时，不会被打包到最后的压缩代码中，所以手动写的JS代码热替换的逻辑根本不会对生产环境有任何影响。
+
+[Vue HMR热更新方案](https://vue-loader.vuejs.org/guide/hot-reload.html)
+[React HMR热更新方案](https://github.com/gaearon/react-hot-loader)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

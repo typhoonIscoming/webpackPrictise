@@ -6,3 +6,5 @@ export const multiplied = (a, b) => a * b
 
 export const divide = (a, b) => a / b
 
+export const pow = a => a * a
+
