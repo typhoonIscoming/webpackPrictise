@@ -90,6 +90,8 @@ module.exports = {
         //     chunks: 'all'
         // },
         usedExports: true,
-        minimize: true,
+        minimize: false,
+        concatenateModules: true,
+        sideEffects: true,
     },
 }
