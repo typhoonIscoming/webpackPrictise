@@ -1,7 +1,5 @@
 ## tree shaking 是一个术语，通常用于描述移除 JavaScript 上下文中的未引用代码(dead-code)。它依赖于 ES2015 模块系统中的静态结构特性
 
-
-
 - AST 对 JS 代码进行语法分析后得出的语法树 (Abstract Syntax Tree)。AST语法树可以把一段 JS 代码的每一个语句都转化为树中的一个节点。
 
 - DCE Dead Code Elimination，在保持代码运行结果不变的前提下，去除无用的代码。这样的好处是:
@@ -153,6 +151,92 @@ module.exports = {
 - Webpack 4 中新增了一个 sideEffects 特性，它允许我们通过配置标识我们的代码是否有副作用，从而提供更大的压缩空间。
 >>> **模块的副作用指的就是模块执行的时候除了导出成员，是否还做了其他的事情。**
 - 这个特性一般只有我们去开发一个 npm 模块时才会用到。因为官网把对 sideEffects 特性的介绍跟 Tree-shaking 混到了一起，所以很多人误认为它们之间是因果关系，其实它们没有什么太大的关系。
+
+- 我们把 components 模块拆分出多个组件文件，然后在 components/index.js 中集中导出，以便于外界集中导入，具体 index.js 代码如下：
+```
+// ./src/components/index.js
+export { default as Button } from './button'
+export { default as Link } from './link'
+```
+- 那这样就会出现一个问题，虽然我们在这里只是希望载入 Button 模块，但实际上载入的是 components/index.js，而 index.js 中又载入了这个目录中全部的组件模块，这就会导致所有组件模块都会被加载执行。
+![所有模块都被打包进来](./images/sideEffects-bundle.png)
+根据打包结果发现，所有的组件模块都被打包进去了
+- 此时如果我们开启 Tree-shaking 特性（只设置 useExports: ture），这里没有用到的导出成员其实最终也可以被移除，打包效果如下：
+![使用usedExports的打包](./images/sideEffects-usedExports-bundle.png)
+- 但是由于这些成员所属的模块中有副作用代码，所以就导致最终 Tree-shaking 过后，这些模块并不会被完全移除。
+- 可能你会认为这些代码应该保留下来，而实际情况是，这些模块内的副作用代码一般都是为这个模块服务的，例如这里我添加的 console.log，就是希望表示一下当前这个模块被加载了。但是最终整个模块都没用到，也就没必要留下这些副作用代码了。
+- 所以说，Tree-shaking 只能移除没有用到的代码成员，而想要完整移除没有用到的模块，那就需要开启 sideEffects 特性了。
+
+- 我们打开 Webpack 的配置文件，在 optimization 中开启 sideEffects 特性，具体配置如下：
+```
+// ./webpack.config.js
+module.exports = {
+    mode: 'none',
+    entry: './src/main.js',
+    output: {
+        filename: 'bundle.js'
+    },
+    optimization: {
+        sideEffects: true
+    }
+}
+```
+> **TIPS：注意这个特性在 production 模式下同样会自动开启。**
+- 那此时 Webpack 在打包某个模块之前，会先检查这个模块所属的 package.json 中的 sideEffects 标识，以此来判断这个模块是否有副作用，如果没有副作用的话，这些没用到的模块就不再被打包。换句话说，即便这些没有用到的模块中存在一些副作用代码，我们也可以通过 package.json 中的 sideEffects 去强制声明没有副作用。
+- 那我们打开项目 package.json 添加一个 sideEffects 字段，把它设置为 false，具体代码如下：
+```
+{
+    "name": "09-side-effects",
+    "version": "0.1.0",
+    "author": "zce <w@zce.me> (https://zce.me)",
+    "license": "MIT",
+    "scripts": {
+        "build": "webpack"
+    },
+    "devDependencies": {
+        "webpack": "^4.43.0",
+        "webpack-cli": "^3.3.11"
+    },
+    "sideEffects": false
+}
+```
+- 这样就表示我们这个项目中的所有代码都没有副作用，让 Webpack 放心大胆地去“干”。
+- 完成以后我们再次运行打包，就不会看到未被使用的代码被打包进来了。
+- **注意在package.json中配置"sideEffects": false的话，在js中引入的样式文件也不会被打包**
+- **所以在package.json中应该配置"sideEffects": ["*.css", "*.scss"]等等其他你项目中用到的样式文件**
+- 再在webpack中配置optimization: { sideEffects: true }
+- 这样就可以放心打包，不用担心未被使用的模块也被打包进去了，这样会大大节省打包过后的代码体积
+
+# sideEffects 注意
+- 使用 sideEffects 这个功能的前提是确定你的代码没有副作用，或者副作用代码没有全局影响，否则打包时就会误删掉你那些有意义的副作用代码。
+- 例如，我这里准备的 extend.js 模块：
+```
+// ./src/extend.js
+// 为 Number 的原型添加一个扩展方法
+Number.prototype.pad = function (size) {
+    const leadingZeros = Array(size + 1).join(0)
+    return leadingZeros + this
+}
+
+// ./src/main.js
+import './extend' // 内部包含影响全局的副作用
+console.log((8).pad(3)) // => '0008'
+```
+- 因为这个模块确实没有导出任何成员，所以这里也就不需要提取任何成员。导入过后就可以使用它为 Number 提供扩展方法了。这里为 Number 类型做扩展的操作就是 extend 模块对全局产生的副作用。
+- 此时如果我们还是通过 package.json 标识我们代码没有副作用，那么再次打包过后，就会出现问题。**Number 的扩展模块并不会打包进来。**
+- 缺少了对 Number 的扩展操作，我们的代码再去运行的时候，就会出现错误。这种扩展的操作属于对全局产生的副作用。
+- 这种基于原型的扩展方式，在很多 Polyfill 库中都会大量出现，比较常见的有 es6-promise，这种模块都属于典型的副作用模块。
+- 最好的办法就是在 package.json 中的 sideEffects 字段中标识需要保留副作用的模块路径（可以使用通配符）
+```
+"sideEffects": [
+    "./src/extend.js", // 设置具体的哪个文件会有副作用，打包时Webpack的sideEffects就不会忽略有必要的副作用模块了。
+    "*.css"
+]
+```
+
+
+
+
 
 
 

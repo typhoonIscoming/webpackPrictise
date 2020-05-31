@@ -3,6 +3,8 @@ import './index.css'
 import './index.scss'
 import '../static/test.md'
 
+import { Button } from './components'
+
 import createEditor from './editor'
 
 const result = add(3, 4)
