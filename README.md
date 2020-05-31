@@ -87,3 +87,5 @@ module.exports = {
 [tree shaking](./static/TreeShaking.md)
 
 [如何利用Dev Server提高本地开发效率](./static/DevServeConfig.md)
+
+[CodeSpliting分包](./static/CodeSpliting.md)

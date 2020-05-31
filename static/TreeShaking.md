@@ -202,8 +202,8 @@ module.exports = {
 ```
 - 这样就表示我们这个项目中的所有代码都没有副作用，让 Webpack 放心大胆地去“干”。
 - 完成以后我们再次运行打包，就不会看到未被使用的代码被打包进来了。
-- <font face="微软雅黑" color="red" size=5>**注意在package.json中配置"sideEffects": false的话，在js中引入的样式文件也不会被打包**</font>
-- <font face="微软雅黑" color="red" size=5>**所以在package.json中应该配置"sideEffects": ["*.css", "*.scss"]等等其他你项目中用到的样式文件**</font>
+- <font face="微软雅黑" color="red" size="5">**注意在package.json中配置"sideEffects": false的话，在js中引入的样式文件也不会被打包**</font>
+- <font face="微软雅黑" color="red" size="5">**所以在package.json中应该配置"sideEffects": ["*.css", "*.scss"]等等其他你项目中用到的样式文件**</font>
 - 再在webpack中配置optimization: { sideEffects: true }
 - 这样就可以放心打包，不用担心未被使用的模块也被打包进去了，这样会大大节省打包过后的代码体积
 
