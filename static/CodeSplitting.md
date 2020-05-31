@@ -7,7 +7,7 @@
 更为合理的方式是打包结果按照一定得规则分离到多个bundle中，然后根据应用的需要<span style="color: red;">**按需加载，降低启动成本，提高响应速度**</span><br>
 
 Q：但是webpack的功能是将散落的模块打包在一起，提高效率，但是这里又要将打包模块拆开，这是否矛盾呢？<br>
-A：web应用受到资源环境所限，<span style="color: red;">太大不行，太碎也不行</span><br>
+A：web应用受到资源环境所限，<span style="color: red;">**太大不行，太碎也不行**</span><br>
 
 因为在开发过程中，划分功能模块的颗粒度会非常细，一个功能模块通常只提供了一个小的工具函数，不能形成一个功能单元，如果不将这些模块打包在一起，而是按照开发时的模块划分，那么去运行一个小功能，就需要<div color="red">加载非常多的资源模块</div>
 
@@ -156,11 +156,96 @@ module.exports = {
 - 此时在我们的 dist 下就会额外生成一个 JS 文件，在这个文件中就是 index 和 album 中公共的模块部分了。splitChunks 还支持很多高级的用法，可以实现各种各样的分包策略，这些我们可以在文档中找到对应的介绍。
 
 ## 动态导入
+除了多入口打包的方式，Code Splitting 更常见的实现方式还是结合 ES Modules 的动态导入特性，从而实现按需加载。<br>
 
+按需加载是开发浏览器应用中一个非常常见的需求。一般我们常说的按需加载指的是加载数据或者加载图片，但是我们这里所说的按需加载，指的是在应用运行过程中，需要某个资源模块时，才去加载这个模块。这种方式极大地降低了应用启动时需要加载的资源体积，提高了应用的响应速度，同时也节省了带宽和流量。<br>
 
+Webpack 中支持使用动态导入的方式实现模块的按需加载，而且所有动态导入的模块都会被自动提取到单独的 bundle 中，从而实现分包。<br>
 
+相比于多入口的方式，动态导入更为灵活，因为我们可以通过代码中的逻辑去控制需不需要加载某个模块，或者什么时候加载某个模块。而且我们分包的目的中，很重要的一点就是让模块实现按需加载，从而提高应用的响应速度。<br>
 
+- 看一个例子：
+```
+├── src
+│   ├── album
+│   │   ├── album.css
+│   │   └── album.js
+│   ├── common
+│   │   ├── fetch.js
+│   │   └── global.css
+│   ├── posts
+│   │   ├── posts.css
+│   │   └── posts.js
+│   ├── index.html
+│   └── index.js
+├── package.json
+└── webpack.config.js
+```
+- 文章列表对应的是这里的 posts 组件，而相册列表对应的是 album 组件。我在打包入口（index.js）中同时导入了这两个模块，然后根据页面锚点的变化决定显示哪个组件，核心代码如下：
+```javascript
+// ./src/index.js
+import posts from './posts/posts'
+import album from './album/album'
+const update = () => {
+    const hash = window.location.hash || '#posts'
+    const mainElement = document.querySelector('.main')
+    mainElement.innerHTML = ''
+    if (hash === '#posts') {
+        mainElement.appendChild(posts())
+    } else if (hash === '#album') {
+        mainElement.appendChild(album())
+    }
+}
+window.addEventListener('hashchange', update)
+update()
+```
+- 在这种情况下，就可能产生资源浪费。试想一下：如果用户只需要访问其中一个页面，那么加载另外一个页面对应的组件就是浪费。
+- 如果我们采用动态导入的方式，就不会产生浪费的问题了，因为所有的组件都是惰性加载，只有用到的时候才会去加载。具体实现代码如下：
+```javascript
+// ./src/index.js
+// import posts from './posts/posts'
+// import album from './album/album'
+const update = () => {
+    const hash = window.location.hash || '#posts'
+    const mainElement = document.querySelector('.main')
+    mainElement.innerHTML = ''
+    if (hash === '#posts') {
+        // mainElement.appendChild(posts())
+        import('./posts/posts').then(({ default: posts }) => {
+        mainElement.appendChild(posts())
+        })
+    } else if (hash === '#album') {
+        // mainElement.appendChild(album())
+        import('./album/album').then(({ default: album }) => {
+            mainElement.appendChild(album())
+        })
+    }
+}
+window.addEventListener('hashchange', update)
+update()
+```
+> P.S. 为了动态导入模块，可以将 import 关键字作为函数调用。当以这种方式使用时，import 函数返回一个 Promise 对象。这就是 ES Modules 标准中的 Dynamic Imports。
 
+- 这里我们先移除 import 这种静态导入，然后在需要使用组件的地方通过 import 函数导入指定路径，那这个方法返回的是一个 Promise。在这个 Promise 的 then 方法中我们能够拿到模块对象。由于我们这里的 posts 和 album 模块是以默认成员导出，所以我们需要解构模块对象中的 default，先拿到导出成员，然后再正常使用这个导出成员。完成以后，Webpack Dev Server 自动重新打包，我们再次回到浏览器，此时应用仍然是可以正常工作的。
+
+- 那我们再回到命令行终端，重新运行打包，然后看看此时的打包结果具体是怎样的。打包完成以后我们打开 dist 目录，具体结果如下图所示：
+![动态导入打包结果](./images/dynamic-bundle.png)
+- 此时 dist 目录下就会额外多出三个 JS 文件，其中有两个文件是动态导入的模块，另外一个文件是动态导入模块中公共的模块，这三个文件就是由动态导入自动分包产生的。
+- 以上就是动态导入在 Webpack 中的使用。整个过程我们无需额外配置任何地方，只需要按照 ES Modules 动态导入的方式去导入模块就可以了，Webpack 内部会自动处理分包和按需加载。
+- 如果你使用的是 Vue.js 之类的 SPA 开发框架的话，那你项目中路由映射的组件就可以通过这种动态导入的方式实现按需加载，从而实现分包。
+
+### 魔法注释
+
+- 默认通过动态导入产生的 bundle 文件，它的 name 就是一个序号，这并没有什么不好，因为大多数时候，在生产环境中我们根本不用关心资源文件的名称。但是如果你还是需要给这些 bundle 命名的话，就可以使用 Webpack 所特有的魔法注释去实现。具体方式如下：
+```javascript
+// 魔法注释
+import(/* webpackChunkName: 'posts' */'./posts/posts')
+    .then(({ default: posts }) => {
+        mainElement.appendChild(posts())
+    })
+```
+- 所谓魔法注释，就是在 import 函数的形式参数位置，添加一个行内注释，这个注释有一个特定的格式：webpackChunkName: ''，这样就可以给分包的 chunk 起名字了。
+- 除此之外，魔法注释还有个特殊用途：如果你的 chunkName 相同的话，那相同的 chunkName 最终就会被打包到一起，例如我们这里可以把这两个 chunkName 都设置为 components，然后再次运行打包，那此时这两个模块都会被打包到一个文件中。借助这个特点，你就可以根据自己的实际情况，灵活组织动态加载的模块了。
 
 
 
