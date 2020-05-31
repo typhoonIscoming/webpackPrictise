@@ -89,3 +89,8 @@ module.exports = {
 [如何利用Dev Server提高本地开发效率](./static/DevServeConfig.md)
 
 [CodeSplitting分包](./static/CodeSplitting.md)
+
+[webpack优化打包速度和打包结果](./static/packagingOptimization.md)
+
+
+
