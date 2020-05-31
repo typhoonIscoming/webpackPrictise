@@ -123,14 +123,106 @@ module.exports = {
 }
 ```
 - 这样 Mini CSS Extract Plugin 在工作时就会自动提取代码中的 CSS 了。打包过后，样式就会存放在独立的文件中，直接通过 link 标签引入页面。
+- 不过这里需要注意的是，如果你的 CSS 体积不是很大的话，提取到单个文件中，效果可能适得其反，因为单独的文件就需要单独请求一次。个人经验是如果 CSS 超过 200KB 才需要考虑是否提取出来，作为单独的文件。
 
 
+## Optimize CSS Assets Webpack Plugin
 
+- 使用Mini CSS Extract Plugin之后，样式文件被提取到了单独的css文件中，但是不会像JS文件那样被压缩。这是因为，Webpack 内置的压缩插件仅仅是针对 JS 文件的压缩，其他资源文件的压缩都需要额外的插件。
 
+- Webpack 官方推荐了一个 Optimize CSS Assets Webpack Plugin 插件。我们可以使用这个插件来压缩我们的样式文件。<br>
 
+`npm i optimize-css-assets-webpack-plugin --save-dev`<br>
 
+- 安装完成过后，我们回到配置文件中，添加对应的配置。具体代码如下：
+```javascript
+// ./webpack.config.js
+const MiniCssExtractPlugin = require('mini-css-extract-plugin')
+const OptimizeCssAssetsWebpackPlugin = require('optimize-css-assets-webpack-plugin')
+module.exports = {
+    mode: 'none',
+    entry: {
+        main: './src/index.js'
+    },
+    output: {
+        filename: '[name].bundle.js'
+    },
+    module: {
+        rules: [
+            {
+                test: /\.css$/,
+                use: [
+                MiniCssExtractPlugin.loader,
+                'css-loader'
+                ]
+            }
+        ]
+    },
+    plugins: [
+        new MiniCssExtractPlugin(),
+        new OptimizeCssAssetsWebpackPlugin()
+    ]
+}
+```
+- 再次打包，发现样式文件已经被压缩了
+- 但是在官方文档中，我们发现，文档中的这个插件并不是配置在 plugins 数组中的，而是添加到了 optimization 对象中的 minimizer 属性中。具体如下：
+```javascript
+// ./webpack.config.js
+const MiniCssExtractPlugin = require('mini-css-extract-plugin')
+const OptimizeCssAssetsWebpackPlugin = require('optimize-css-assets-webpack-plugin')
+module.exports = {
+    mode: 'none',
+    entry: {
+        main: './src/index.js'
+    },
+    output: {
+        filename: '[name].bundle.js'
+    },
+    optimization: {
+        minimizer: [
+            new OptimizeCssAssetsWebpackPlugin()
+        ]
+    },
+    module: {
+        rules: [
+            {
+                test: /\.css$/,
+                use: [
+                MiniCssExtractPlugin.loader,
+                'css-loader'
+                ]
+            }
+        ]
+    },
+    plugins: [
+        new MiniCssExtractPlugin()
+    ]
+}
+```
+- 因为如果我们配置到 plugins 属性中，那么这个插件在任何情况下都会工作。而配置到 minimizer 中，就只会在 minimize 特性开启时才工作。所以 Webpack 建议像这种压缩插件，应该我们配置到 minimizer 中，便于 minimize 选项的统一控制。
 
+- 但是这么配置也有个缺点，此时我们再次运行生产模式打包，打包完成后再来看一眼输出的 JS 文件，此时你会发现，原本可以自动压缩的 JS，现在却不能压缩了。具体 JS 的输出结果如下：
+![设置minimizer之后，JS不能压缩的问题](./images/config-minimizer-problem.png)
 
+- 这是因为我们设置了 minimizer，Webpack 认为我们需要使用自定义压缩器插件，那内部的 JS 压缩器就会被覆盖掉。我们必须手动再添加回来。内置的 JS 压缩插件叫作 terser-webpack-plugin，我们回到命令行手动安装一下这个模块。
+```javascript
+// ./webpack.config.js
+const MiniCssExtractPlugin = require('mini-css-extract-plugin')
+const OptimizeCssAssetsWebpackPlugin = require('optimize-css-assets-webpack-plugin')
+const TerserWebpackPlugin = require('terser-webpack-plugin')
+module.exports = {
+    optimization: {
+        minimizer: [
+            new TerserWebpackPlugin(),
+            new OptimizeCssAssetsWebpackPlugin()
+        ]
+    },
+    plugins: [
+        new MiniCssExtractPlugin()
+    ]
+}
+```
+- 那这样的话，我们再次以生产模式(mode: "production")运行打包，JS 文件和 CSS 文件就都可以正常压缩了。
 
 
 

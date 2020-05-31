@@ -7,6 +7,8 @@ const { CleanWebpackPlugin } = require('clean-webpack-plugin')
 const TerserPlugin = require('terser-webpack-plugin');
 const webpackConfig = require('../webpack.config')
 
+const OptimizeCssAssetsWebpackPlugin = require('optimize-css-assets-webpack-plugin')
+
 // 移除现在已经存在的文件夹
 // 也可以使用clean-webpack-plugin插件
 // rm(path.join(config.build.assetsRoot), err => {
@@ -18,9 +20,10 @@ const spinner = ora('building for production...')
 spinner.start()
 
 webpack(merge(webpackConfig, {
-    mode: "development",
+    mode: "production",
     plugins: [
         new CleanWebpackPlugin(),
+        new OptimizeCssAssetsWebpackPlugin(),
         // new webpack.DllPlugin({
         //     context: __dirname,
         //     path: path.join(__dirname, '..', '/dist/[name]-manifest.json'),
@@ -44,17 +47,10 @@ webpack(merge(webpackConfig, {
         //     }
         // })
     ],
-    // optimization: {
-    //     minimizer: [
-    //         new TerserPlugin({
-    //             cache: true,
-    //             parallel: true,
-    //             sourceMap: true, // Must be set to true if using source-maps in production
-    //             terserOptions: {
-    //                 // https://github.com/webpack-contrib/terser-webpack-plugin#terseroptions
-    //             }
-    //         }),
-    //     ],
+    optimization: {
+        minimizer: [
+            new TerserPlugin(),
+        ],
     //     splitChunks: {
     //         chunks: 'all',
     //         minSize: 30000,
@@ -75,7 +71,7 @@ webpack(merge(webpackConfig, {
     //             }
     //         }
     //     }
-    // },
+    },
 }), (err, stats) => {
     spinner.stop()
     if (err) throw err
