@@ -12,7 +12,8 @@ const config = require('./config')
 
 module.exports = {
     mode: 'none', // production | development
-    devtool: 'cheap-module-eval-source-map',
+    // devtool: 'cheap-module-eval-source-map',
+    devtool: 'source-map',
     entry: './src/index.js',
     output: {
         filename: '[name].[hash:4].js',
@@ -84,9 +85,11 @@ module.exports = {
         ],
     },
     optimization: {
-        splitChunks: {
-            // include all types of chunks
-            chunks: 'all'
-        }
+        // splitChunks: {
+        //     // include all types of chunks
+        //     chunks: 'all'
+        // },
+        usedExports: true,
+        minimize: true,
     },
 }

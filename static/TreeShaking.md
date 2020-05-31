@@ -41,3 +41,18 @@
 
 - 新的 webpack 4 正式版本，扩展了这个检测能力，通过 package.json 的 "sideEffects" 属性作为标记，向 compiler 提供提示，表明项目中的哪些文件是 "pure(纯的 ES2015 模块)"，由此可以安全地删除文件中未使用的部分。
 
+
+## 通过以上我们知道在生产模式下，webpack会自动开启Tree Shaking，那么在其他环境下，怎么开启tree shaking呢？
+先设置mode="none | development", devtool="source-map"方便查看打包之后的结构
+- 在执行打包命令之后，可以看到如下图：
+![未开启Tree-shaking打包结果](./images/none-Tree-shaking-mode.png)
+
+在没有开启tree-shaking时，打包时，将lib.js中的所有方法都打包进来了
+
+- 我们在配置文件中配置optimization: { usedExports: true },表示只导出外部使用了的方法。再次打包，结果如下图：
+![开启了Tree-shaking打包结果](./images/used-tree-shaking-mode.png)
+-我们可以看到，只引用了我们使用过的方法，未使用的方法没有被导出，如果是用vscode查看打包后的代码，可以看到未被使用的成员变量颜色变浅，结合压缩代码的插件，未被使用的变量不会被打包到最后的打包代码中。
+- 我们再配置optimization: { minimize: true }, 表示开启代码压缩，最后的打包结果就不会看到未被使用的成员变量被打包进去。
+![开启了Tree-shaking并压缩代码](./images/used-tree-shaking-minimizer.png)
+- 可以看到开启tree-shaking并压缩代码之后，未被使用的成员变量没有被打包进去。
+
