@@ -170,6 +170,38 @@ import('./logger').then(({ log }) => {
 - 且： UMD and IIFE output formats are not supported for code-splitting builds.如果使用code splitting，那么这两种输出格式是不支持的
 
 ## 输出格式问题
+- 目前采用的输出格式是 es，所以自动分包过后，得到的代码还是使用 ES Modules 实现的动态模块加载。
+- 很明显，这种方式的代码仍然会存在环境兼容性问题：如果在低版本浏览器，这种输出结果是无法正常执行的。
+- 解决这个问题的办法就是修改 Rollup 打包输出的格式。目前所有支持动态导入的输出格式中，只有 amd 和 system 两种格式打包的结果适合于浏览器环境。
+- 需要注意一点，这种 AMD 标准在浏览器中也不是直接支持的，也就是说我们还是需要使用一个支持这个标准的库来加载这些输出的模块，例如 Require.js，具体使用方式参考：
+```javascript
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AMD Format output</title>
+</head>
+<body>
+    <script src="https://unpkg.com/requirejs@2.3.6/require.js" data-main="dist/index.js"></script>
+</body>
+</html>
+```
+## 写在最后
+通过以上的探索，我们发现 Rollup 确实有它的优势：<br>
+- 输出结果更加扁平，执行效率更高；
+- 自动移除未引用代码；
+- 打包结果依然完全可读。
+但是它的缺点也同样明显：<br>
+- 加载非 ESM 的第三方模块比较复杂；
+- 因为模块最终都被打包到全局中，所以无法实现 HMR；
+- 浏览器环境中，代码拆分功能必须使用 Require.js 这样的 AMD 库。
+- 综合以上特点，我们发现如果我们开发的是一个应用程序，需要大量引用第三方模块，同时还需要 HMR 提升开发体验，而且应用过大就必须要分包。那这些需求 Rollup 都无法满足。
+- 而如果我们是开发一个 JavaScript 框架或者库，那这些优点就特别有必要，而缺点呢几乎也都可以忽略，所以在很多像 React 或者 Vue 之类的框架中都是使用的 Rollup 作为模块打包器，而并非 Webpack。
+- 但是到目前为止，开源社区中大多数人还是希望这两个工具共同存在，并且能够相互支持和借鉴，原因很简单：让更专业的工具完成更专业的事情。
+
+总结一下：Webpack 大而全，Rollup 小而美。<br>
+在对它们的选择上，我的基本原则是：应用开发使用 Webpack，类库或者框架开发使用 Rollup。<br>
+不过这并不是绝对的标准，只是经验法则。因为 Rollup 也可用于构建绝大多数应用程序，而 Webpack 同样也可以构建类库或者框架。另外随着近几年 Webpack 的发展，Rollup 中的很多优势几乎已经抹平了，所以这种对比慢慢地也就没有太大意义了。
 
 
 

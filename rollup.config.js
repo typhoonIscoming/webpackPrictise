@@ -20,7 +20,7 @@ export default {
     input: 'rollupsrc/index.js',
     output: {
         dir: 'rollupmuiltdist',
-        format: 'cjs',
+        format: 'amd',
     },
     plugins: [
         json(),

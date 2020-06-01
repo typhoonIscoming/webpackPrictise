@@ -1,24 +1,26 @@
-'use strict';
+define(['require'], function (require) { 'use strict';
 
-const hello = 'hi I am Tse';
+    const hello = 'hi I am Tse';
 
-const trim = str => (str ? str.replace(/(^\s*)|(\s*$)/g, '') : '');
+    const trim = str => (str ? str.replace(/(^\s*)|(\s*$)/g, '') : '');
 
-var name = "webpackprictise";
+    var name = "webpackprictise";
 
-var cjsModule = {
-    foo: 'bar'
-};
+    var cjsModule = {
+        foo: 'bar'
+    };
 
-const username = '  xie  tse  rollup ';
+    const username = '  xie  tse  rollup ';
 
-console.log('message', hello);
-console.log('name trimed', trim(username));
+    console.log('message', hello);
+    console.log('name trimed', trim(username));
 
-console.log('package.json name', name);
+    console.log('package.json name', name);
 
-console.log('cjs-module', cjsModule);
+    console.log('cjs-module', cjsModule);
 
-Promise.resolve().then(function () { return require('./logger-3f14a01f.js'); }).then(({ log }) => {
-    log('this is code splitting in rollup');
+    new Promise(function (resolve, reject) { require(['./logger-ee134003'], resolve, reject) }).then(({ log }) => {
+        log('this is code splitting in rollup');
+    });
+
 });
