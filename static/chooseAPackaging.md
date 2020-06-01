@@ -108,14 +108,68 @@ console.log(name, version)
 - 那这个 JSON 文件中的每一个属性都会作为单独的导出成员。我们可以提取一下 JSON 中的 name 和 version，然后把它打印出来。
 - 此时你就能看到，package.json 中的 name 和 version 正常被打包进来了，而且其他没用到的属性也都被 Tree-shaking 移除掉了。
 
+## 加载 NPM 模块
+- Rollup 默认只能够按照文件路径的方式加载本地的模块文件，对于 node_modules 目录中的第三方模块，并不能像 Webpack 一样，直接通过模块名称直接导入。为了抹平这个差异，Rollup 给出了一个 @rollup/plugin-node-resolve 插件，通过使用这个插件，我们就可以在代码中直接使用模块名称导入模块了。<br>
+`npm i @rollup/plugin-node-resolve --save-dev`<br>
+- 安装完成过后，打开配置文件，这里同样导入插件函数，然后把它配置到 plugins 数组中。具体配置如下：
+```javascript
+// ./rollup.config.js
+import json from '@rollup/plugin-json'
+import resolve from '@rollup/plugin-node-resolve'
+export default {
+    input: 'rollupsrc/index.js',
+    output: {
+        file: 'rollupdist/bundle.js',
+        format: 'es'
+    },
+    plugins: [
+        json(),
+        resolve()
+    ]
+}
+```
+- 完成以后我们就可以回到代码中直接导入 node_modules 中的第三方模块了。例如：`import { camelCase } from 'lodash-es'`<br>
+> P.S. 相比于普通的 lodash，lodash-es 可以更好地支持 Tree-shaking。
+- 这里使用 Lodash 的 ESM 版本而不是 Lodash 普通版本的原因是 Rollup 默认只能处理 ESM 模块。如果要使用普通版本则需要额外处理。
 
+## 加载 CommonJS 模块
+- 由于 Rollup 设计的是只处理 ES Modules 模块的打包，所以如果在代码中导入 CommonJS 模块，默认是不被支持的。但是目前大量的 NPM 模块还是使用 CommonJS 方式导出成员，所以为了兼容这些模块。官方给出了一个插件，叫作 @rollup/plugin-commonjs。
+- 这个插件在用法上跟前面两个插件是一样的，我就不单独演示了。我们直接看一下这个插件的效果。这里我添加了一个 cjs-module.js 文件，具体代码如下：
+```javascript
+// ./rollupsrc/cjs-module.js
+module.exports = {
+    foo: 'bar'
+}
+```
+- 这个文件中使用 CommonJS 的方式导出了一个对象。然后回到入口文件中通过 ES Modules 的方式导入，具体代码如下：
+```javascript
+// ./src/index.js
+// 导入 CommonJS 模块成员
+import cjs from './cjs-module'
+// 使用模块成员
+console.log(cjs) // cjs => { foo: 'bar' }
 
+// bundle.cjs.js
+var cjsModule = {
+    foo: 'bar'
+};
+console.log(cjsModule)
+```
+## Code Splitting
+- Rollup 的最新版本中已经开始支持代码拆分了。我们同样可以使用符合 ES Modules 标准的动态导入方式实现模块的按需加载。例如：
+```
+// ./src/index.js
+// 动态导入的模块会自动分包
+import('./logger').then(({ log }) => {
+    log('code splitting~')
+})
+```
+- **注意：如果使用分包，那么rollup.config.js中的配置output:{ dir: 'rollupmuiltdist' }这里就只能配置文件夹了，而不能是file: '...'(一个打包后的文件名)了**
 
+- 否则会报：[!] Error: When building multiple chunks, the "output.dir" option must be used, not "output.file". To inline dynamic imports, set the "inlineDynamicImports" option.
+- 且： UMD and IIFE output formats are not supported for code-splitting builds.如果使用code splitting，那么这两种输出格式是不支持的
 
-
-
-
-
+## 输出格式问题
 
 
 

@@ -9,12 +9,18 @@ System.register([], function () {
 
             var name = "webpackprictise";
 
+            var cjsModule = {
+                foo: 'bar'
+            };
+
             const username = '  xie  tse  rollup ';
 
             console.log('message', hello);
             console.log('name trimed', trim(username));
 
             console.log('package.json name', name);
+
+            console.log('cjs-module', cjsModule);
 
         }
     };
