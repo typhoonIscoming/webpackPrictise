@@ -27,7 +27,7 @@
 - 在执行过程中，webpack默认自动从src/index.js开始打包，打包默认保存在dist/main.js中
 
 - 但默认配置不能满足日常开发需求，可根据自己需求配置，在根目录下面建webpack.config.js
-```
+```javascript
 const path = require('path')
 
 module.exports = {
@@ -61,7 +61,7 @@ module.exports = {
 `npm i node-sass sass-loader --save-dev`
    
 - 通常，生产环境下比较推荐的做法是，使用 mini-css-extract-plugin 将样式表抽离成专门的单独文件。这样，样式表将不再依赖于 JavaScript
-```
+```javascript
     module: {
         rules: [{
             test: /\.scss$/,

@@ -40,6 +40,75 @@ console.log('name trimed', trim(name))
 - 完成以后，我们找到 Rollup 打包输出的文件，具体结果如下：
 ![rollup打包结果](./rollupImages/rollup-bundle.png)
 
+- 在这个文件中我们的第一印象就是，Rollup 打包结果惊人的简洁，基本上就跟我们手写的代码一样。相比于 Webpack 大量的引导代码和一堆的模块函数，这里的输出结果没有任何多余代码，就是把打包过程中的各个模块按照依赖顺序，先后拼接到了一起。而且我们仔细观察打包结果，你会发现，在我们输出的结果中只会保留那些用到的部分，对于未引用部分都没有输出。这是因为 Rollup 默认会自动开启 Tree-shaking 优化输出结果，Tree-shaking 的概念最早也就是 Rollup 这个工具提出的。
+
+- Rollup 同样支持以配置文件的方式去配置打包过程中的各项参数，我们可以在项目的根目录下新建一个 **rollup.config.js**的配置文件
+```JavaScript
+// ./rollup.config.js
+export default {
+    input: 'rollupsrc/index.js',
+    output: {
+        file: 'rollupdist/bundle.js',
+        format: 'es' // 输出格式
+    }
+}
+```
+- 这个文件中需要导出一个配置对象，在这个对象中我们可以通过 input 属性指定打包的入口文件路径，通过 output 指定输出相关配置，output 属性是一个对象，在 output 对象中可以使用 file 属性指定输出的文件名，format 属性指定输出代码的格式。
+- 完成以后，我们回到命令行，再次执行 rollup 命令，不过需要注意的是，这里需要通过 --config 参数来表明使用项目中的配置文件。你也可以通过这个参数来指定不同的配置文件名称。具体命令如下：
+```JavaScript
+$ npx rollup --config # 使用默认配置文件
+$ npx rollup --config rollup.prod.js # 指定配置文件路径
+```
+## 输出格式
+- Rollup 打包支持多种输出格式，这里我们回到配置文件中，配置同时输出所有格式下的文件，具体配置如下：
+```javascript
+// ./rollup.config.js
+// 所有 Rollup 支持的格式
+const formats = ['es', 'amd', 'cjs', 'iife', 'umd', 'system']
+export default formats.map(format => ({
+    input: 'rollupsrc/index.js',
+    output: {
+        file: `rollupdist/bundle.${format}.js`,
+        format
+    }
+}))
+```
+- 在这个配置当中我们导出了一个数组，数组中的每个成员都是一个单独的打包配置，这样 Rollup 就会分别按照每个配置单独打包。这一点与 Webpack 非常相似。
+- 配置完成之后，我们回到命令行终端，再次运行 Rollup 打包。那这次打包过后，dist 目录下就会生成不同格式的输出结果
+
+## 使用插件
+- Rollup 自身的功能就只是 ES Modules 模块的合并，如果有更高级的要求，例如加载其他类型的资源文件或者支持导入 CommonJS 模块，又或是编译 ES 新特性，这些额外的需求 Rollup 同样支持使用插件去扩展实现。
+- Webpack 中划分了 Loader、Plugin 和 Minimizer 三种扩展方式，而插件是 Rollup 的唯一的扩展方式。
+
+- 这里我们先来尝试使用一个可以让我们在代码中导入 JSON 文件的插件：@rollup/plugin-json，通过这个过程来了解如何在 Rollup 中使用插件。
+
+-首先我们需要将 @rollup/plugin-json 作为项目的开发依赖安装进来。具体安装命令：`npm i @rollup/plugin-json --save-dev`
+- 安装完成过后，我们打开配置文件。由于 rollup 的配置文件中可以直接使用 ES Modules，所以我们这里使用 import 导入这个插件模块。具体代码如下：
+```javascript
+// ./rollup.config.js
+import json from '@rollup/plugin-json'
+export default {
+    input: 'src/index.js',
+    output: {
+        file: 'dist/bundle.js',
+        format: 'es'
+    },
+    plugins: [
+        json()
+    ]
+}
+```
+- @rollup/plugin-json 模块的默认导出就是一个插件函数。我们可以将这个函数的调用结果添加到配置对象的 plugins 数组中，注意这里是将调用结果放到数组中，而不是将这个函数直接放进去。
+
+
+
+
+
+
+
+
+
+
 
 
 

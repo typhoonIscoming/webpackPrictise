@@ -6,7 +6,8 @@
     "scripts": {
         "build": "node build/build.js",
         "dev": "node webpack.dev.conf.js",
-        "rollup": "npx rollup ./rollupsrc/index.js --file ./rollupdist/bundle.js",
+        "rollup:d": "npx rollup ./rollupsrc/index.js --file ./rollupdist/bundle.js",
+        "rollup": "npx rollup --config",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "author": "xie",
