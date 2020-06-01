@@ -6,6 +6,7 @@
     "scripts": {
         "build": "node build/build.js",
         "dev": "node webpack.dev.conf.js",
+        "rollup": "npx rollup ./rollupsrc/index.js --file ./rollupdist/bundle.js",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "author": "xie",
@@ -22,6 +23,7 @@
         "node-sass": "^4.14.1",
         "optimize-css-assets-webpack-plugin": "^5.0.3",
         "ora": "^4.0.4",
+        "rollup": "^2.12.0",
         "sass-loader": "^7.0.2",
         "style-loader": "^1.2.1",
         "terser-webpack-plugin": "^3.0.2",
