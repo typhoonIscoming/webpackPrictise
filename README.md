@@ -92,5 +92,6 @@ module.exports = {
 
 [webpack优化打包速度和打包结果](./static/packagingOptimization.md)
 
+[Rollup介绍和webpack打包工具选择](./static/chooseAPackaging.md)
 
 
