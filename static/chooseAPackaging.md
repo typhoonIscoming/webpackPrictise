@@ -157,7 +157,7 @@ console.log(cjsModule)
 ```
 ## Code Splitting
 - Rollup 的最新版本中已经开始支持代码拆分了。我们同样可以使用符合 ES Modules 标准的动态导入方式实现模块的按需加载。例如：
-```
+```javascript
 // ./src/index.js
 // 动态导入的模块会自动分包
 import('./logger').then(({ log }) => {
@@ -190,7 +190,8 @@ import('./logger').then(({ log }) => {
 通过以上的探索，我们发现 Rollup 确实有它的优势：<br>
 - 输出结果更加扁平，执行效率更高；
 - 自动移除未引用代码；
-- 打包结果依然完全可读。
+- 打包结果依然完全可读。<br>
+
 但是它的缺点也同样明显：<br>
 - 加载非 ESM 的第三方模块比较复杂；
 - 因为模块最终都被打包到全局中，所以无法实现 HMR；
