@@ -1,15 +1,19 @@
 (function (factory) {
-	typeof define === 'function' && define.amd ? define(factory) :
-	factory();
+    typeof define === 'function' && define.amd ? define(factory) :
+    factory();
 }((function () { 'use strict';
 
-	const hello = 'hi I am Tse';
+    const hello = 'hi I am Tse';
 
-	const trim = str => (str ? str.replace(/(^\s*)|(\s*$)/g, '') : '');
+    const trim = str => (str ? str.replace(/(^\s*)|(\s*$)/g, '') : '');
 
-	const name = '  xie  tse  rollup ';
+    var name = "webpackprictise";
 
-	console.log('message', hello);
-	console.log('name trimed', trim(name));
+    const username = '  xie  tse  rollup ';
+
+    console.log('message', hello);
+    console.log('name trimed', trim(username));
+
+    console.log('package.json name', name);
 
 })));

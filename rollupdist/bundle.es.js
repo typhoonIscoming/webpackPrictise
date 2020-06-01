@@ -2,7 +2,11 @@ const hello = 'hi I am Tse';
 
 const trim = str => (str ? str.replace(/(^\s*)|(\s*$)/g, '') : '');
 
-const name = '  xie  tse  rollup ';
+var name = "webpackprictise";
+
+const username = '  xie  tse  rollup ';
 
 console.log('message', hello);
-console.log('name trimed', trim(name));
+console.log('name trimed', trim(username));
+
+console.log('package.json name', name);

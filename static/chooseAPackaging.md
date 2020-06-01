@@ -99,8 +99,14 @@ export default {
 }
 ```
 - @rollup/plugin-json 模块的默认导出就是一个插件函数。我们可以将这个函数的调用结果添加到配置对象的 plugins 数组中，注意这里是将调用结果放到数组中，而不是将这个函数直接放进去。
-
-
+- 配置好这个插件过后，我们就可以在代码中通过 import 导入 json 文件了。我们回到 index.js 文件中，这里我们尝试通过 import 导入 package.json，具体代码如下：
+```javascript
+// ./src/index.js
+import { name, version } from '../package.json'
+console.log(name, version)
+```
+- 那这个 JSON 文件中的每一个属性都会作为单独的导出成员。我们可以提取一下 JSON 中的 name 和 version，然后把它打印出来。
+- 此时你就能看到，package.json 中的 name 和 version 正常被打包进来了，而且其他没用到的属性也都被 Tree-shaking 移除掉了。
 
 
 
